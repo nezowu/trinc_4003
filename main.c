@@ -9,7 +9,7 @@
  * один бит не используется, единица адресации 1 трайт.
  * спецификацию напишу позже; */
 
-typedef struct tryte_low {
+typedef struct tryte_t {
 	uint8_t one:2, two:2, three:2, four:2;
 } Tryte_t;
 
