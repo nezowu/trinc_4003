@@ -5,4 +5,4 @@ launch: main.o
 main.o: main.c
 	cc -c $(CFLAGS) main.c
 clean:
-	find . -maxdepth 1 -type f -perm /u+x -o -name "*.o" | xargs rm -f
+	find . -maxdepth 1 -type f \( -perm /u+x -o -name "*.o" \) -delete
