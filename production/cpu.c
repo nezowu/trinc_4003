@@ -1,51 +1,64 @@
 #include <stdio.h>
-#include <errno.h>
-#include <stdint.h>
-#include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <assert.h>
+#include <string.h>
 typedef unsigned short T;
 
 typedef struct tryte_t {
-	uint8_t three:2, two:2, one:2, ou:2;
+	uint8_t ou:2;
+	uint8_t one:2;
+	uint8_t two:2;
+	uint8_t three:2;
 } Tryte_t;
 
-Tryte_t r0;
-Tryte_t r1;
-Tryte_t r2;
-Tryte_t r3;
-Tryte_t rf; // регистр флагов
+Tryte_t BP;
+Tryte_t SP;
+Tryte_t RF; //регистр флагов
+Tryte_t MAX = {2, 2, 2, 2}; //80
+Tryte_t MIN = {0, 0, 0, 0}; //нул
+Tryte_t ONE = {1, 0, 0, 0}; //адын
+
+typedef struct stack_t {
+	Tryte_t *data;
+	Tryte_t *bp;
+	Tryte_t *sp;
+} Stack_t;
+
+Stack_t Stack;
 
 Tryte_t summ(Tryte_t, Tryte_t);
-T less(Tryte_t, Tryte_t);
-T equal(Tryte_t, Tryte_t);
-Tryte_t sub(Tryte_t, Tryte_t);
-T ternary_to_decimal(Tryte_t *);
 Tryte_t decimal_to_ternary(T);
+T ternary_to_decimal(Tryte_t);
+T equal(Tryte_t, Tryte_t);
+void push(Tryte_t value);
+T less(Tryte_t, Tryte_t);
+Tryte_t sub(Tryte_t, Tryte_t);
+Tryte_t pop(void);
+void initStack(void);
 
-int main(int argc, char *argv[]) {
-	r0.three = 0, r0.two = 0, r0.one = 0, r0.ou = 0;
-	r1.three = 0, r1.two = 0, r1.one = 0, r1.ou = 1;
-	r2.three = 0, r2.two = 2, r2.one = 2, r2.ou = 2;
-	r3.three = 0, r3.two = 1, r3.one = 1, r3.ou = 2;
-	rf.three = 0, rf.two = 0, rf.one = 0, rf.ou = 0; // регистр флагов
-
-//	printf("%d\n", less(r0, r1));
-//	printf("%d\n", equal(r0, r1));
-
-	r0 = summ(r0, r1);
-	printf("%d%d%d%de%d\n", r0.three, r0.two, r0.one, r0.ou, rf.ou);
-	printf("%d\n", ternary_to_decimal(&r0));
-//	r0 = sub(r2, r3);
-//	printf("%d%d%d%de%d\n", r0.three, r0.two, r0.one, r0.ou, rf.one);
-	// загружаем двоичную программу в память.
-//	FILE *prog;
-//	prog = fopen(argv[1], "r");
-//	if(!prog) {
-//		perror("can't open programm file");
-//		return(1);
-//	}
-//	fwrite(&mem, sizeof(mem), 1, prog);
-//	printf("%d %d %d %d\n", mem.ou, mem.one, mem.two, mem.three);
+int main(void) {
+	initStack();
+	Tryte_t value = decimal_to_ternary(5);
+	push(value); //5
+	value = summ(value, ONE);
+	push(value); //6
+	value = summ(value, ONE);
+	push(value); //7
+	push(summ(value, ONE)); //8
+	puts("hi");
+	printf("%d\n", ternary_to_decimal(*Stack.data));
+	printf("%d\n", ternary_to_decimal(*Stack.sp));
+	printf("%d\n", ternary_to_decimal(*Stack.bp));
+	printf("%d\n", ternary_to_decimal(*Stack.sp));
+	puts("hi");
+	printf("%d\n", ternary_to_decimal(pop()));
+	printf("%d\n", ternary_to_decimal(pop()));
+	printf("%d\n", ternary_to_decimal(pop()));
+	push(summ(value, ONE)); //8
+	puts("hi");
+	printf("%d\n", ternary_to_decimal(pop()));
+	printf("%d\n", ternary_to_decimal(pop()));
 	return 0;
 }
 
@@ -167,7 +180,7 @@ Tryte_t summ(Tryte_t reg0, Tryte_t reg1) { //сумматор двух реги�
 			exit(EXIT_FAILURE);
 	}
 	if(sum == 1) {
-		rf.ou = sum;
+		RF.ou = sum;
 		reg0.ou = reg0.one;
 		reg0.one = reg0.two;
 		reg0.two = reg0.three;
@@ -194,24 +207,16 @@ T less(Tryte_t dig0, Tryte_t dig1) { // <
         return 0;
 }
 
-T equal(Tryte_t dig0, Tryte_t dig1) { // ==
-        if(dig0.ou == dig1.ou && dig0.one == dig1.one && dig0.two == dig1.two && dig0.three == dig1.three)
-                return 1;
-        else
-                return 0;
-}
-
-
 Tryte_t sub(Tryte_t reg0, Tryte_t reg1) { // -
         T sub = 0;
         if(less(reg0, reg1)) {
                 Tryte_t temp; 
-                memcpy(&temp, &reg0, 1);
-                memcpy(&reg0, &reg1, 1);
-                memcpy(&reg1, &temp, 1);
-                rf.one = 1;
+                memcpy(&temp, &reg0, 1); 
+                memcpy(&reg0, &reg1, 1); 
+                memcpy(&reg1, &temp, 1); 
+                RF.one = 1;
         } else  
-                rf.one = 0;
+                RF.one = 0;
         if(reg0.ou < reg1.ou) {
                 sub = 3;
                 reg1.one += 1;
@@ -237,11 +242,7 @@ Tryte_t sub(Tryte_t reg0, Tryte_t reg1) { // -
         return reg0;
 }
 
-T ternary_to_decimal(Tryte_t *st) { //преобразование троичных данных в десятичные
-        return st->three*(3*3*3)+st->two*(3*3)+st->one*3+st->ou*1;
-}
-
-Tryte_t decimal_to_ternary(T digit) { //преобразование десятичных данных в троичные
+Tryte_t decimal_to_ternary(T digit) {
         Tryte_t temp;
         temp.ou = digit % 3;
         if(digit /= 3) {
@@ -253,4 +254,39 @@ Tryte_t decimal_to_ternary(T digit) { //преобразование десят�
                 }
         }
         return temp;
+}
+
+T ternary_to_decimal(Tryte_t st) { //преобразование троичных данных в десятичные
+	return st.three*(3*3*3)+st.two*(3*3)+st.one*3+st.ou*1;
+}
+
+T equal(Tryte_t dig0, Tryte_t dig1) { // ==
+        if(dig0.ou == dig1.ou && dig0.one == dig1.one && dig0.two == dig1.two && dig0.three == dig1.three)
+                return 1;
+        else
+                return 0;
+}
+
+void push(Tryte_t value) {
+	assert(equal(SP, MAX) != 1);
+	*Stack.sp = summ(*Stack.sp, ONE);
+	Stack.data = (Tryte_t *)realloc(Stack.data, sizeof(Tryte_t) * ternary_to_decimal(*Stack.sp));
+	*(Stack.data + ternary_to_decimal(*Stack.sp) - 1) = value;
+}
+
+Tryte_t pop(void) {
+	Tryte_t temp;
+	assert(equal(SP, MIN) == 0);
+	*Stack.sp = sub(*Stack.sp, ONE);
+	temp = *(Stack.data + ternary_to_decimal(*Stack.sp));
+	Stack.data = (Tryte_t *)realloc(Stack.data, sizeof(Tryte_t) * ternary_to_decimal(*Stack.sp));
+	return temp;
+}
+
+void initStack(void) {
+	Stack.data = malloc(0); //смело присваиваем адресу реальное значение, а не NULL, потому, что
+	Stack.sp = &SP;
+	*Stack.sp = decimal_to_ternary(0); //при top == 0 невозможжно получить данные по этому адресу с помощью функции pull
+	Stack.bp = &BP;
+	*Stack.bp = decimal_to_ternary(0);
 }
