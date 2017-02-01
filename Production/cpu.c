@@ -28,8 +28,8 @@ typedef struct stack_t {
 Stack_t Stack;
 
 Tryte_t summ(Tryte_t, Tryte_t);
-Tryte_t decimal_to_ternary(T);
-T ternary_to_decimal(Tryte_t);
+Tryte_t decimalToTernary(T);
+T ternaryToDecimal(Tryte_t);
 T equal(Tryte_t, Tryte_t);
 void push(Tryte_t value);
 T less(Tryte_t, Tryte_t);
@@ -39,7 +39,7 @@ void initStack(void);
 
 int main(void) {
 	initStack();
-	Tryte_t value = decimal_to_ternary(5);
+	Tryte_t value = decimalToTernary(5);
 	push(value); //5
 	value = summ(value, ONE);
 	push(value); //6
@@ -47,18 +47,18 @@ int main(void) {
 	push(value); //7
 	push(summ(value, ONE)); //8
 	puts("hi");
-	printf("%d\n", ternary_to_decimal(*Stack.data));
-	printf("%d\n", ternary_to_decimal(*Stack.sp));
-	printf("%d\n", ternary_to_decimal(*Stack.bp));
-	printf("%d\n", ternary_to_decimal(*Stack.sp));
+	printf("%d\n", ternaryToDecimal(*Stack.data));
+	printf("%d\n", ternaryToDecimal(*Stack.sp));
+	printf("%d\n", ternaryToDecimal(*Stack.bp));
+	printf("%d\n", ternaryToDecimal(*Stack.sp));
 	puts("hi");
-	printf("%d\n", ternary_to_decimal(pop()));
-	printf("%d\n", ternary_to_decimal(pop()));
-	printf("%d\n", ternary_to_decimal(pop()));
+	printf("%d\n", ternaryToDecimal(pop()));
+	printf("%d\n", ternaryToDecimal(pop()));
+	printf("%d\n", ternaryToDecimal(pop()));
 	push(summ(value, ONE)); //8
 	puts("hi");
-	printf("%d\n", ternary_to_decimal(pop()));
-	printf("%d\n", ternary_to_decimal(pop()));
+	printf("%d\n", ternaryToDecimal(pop()));
+	printf("%d\n", ternaryToDecimal(pop()));
 	return 0;
 }
 
@@ -242,7 +242,7 @@ Tryte_t sub(Tryte_t reg0, Tryte_t reg1) { // -
         return reg0;
 }
 
-Tryte_t decimal_to_ternary(T digit) {
+Tryte_t decimalToTernary(T digit) {
         Tryte_t temp;
         temp.ou = digit % 3;
         if(digit /= 3) {
@@ -256,7 +256,7 @@ Tryte_t decimal_to_ternary(T digit) {
         return temp;
 }
 
-T ternary_to_decimal(Tryte_t st) { //преобразование троичных данных в десятичные
+T ternaryToDecimal(Tryte_t st) { //преобразование троичных данных в десятичные
 	return st.three*(3*3*3)+st.two*(3*3)+st.one*3+st.ou*1;
 }
 
@@ -270,23 +270,23 @@ T equal(Tryte_t dig0, Tryte_t dig1) { // ==
 void push(Tryte_t value) {
 	assert(equal(SP, MAX) != 1);
 	*Stack.sp = summ(*Stack.sp, ONE);
-	Stack.data = (Tryte_t *)realloc(Stack.data, sizeof(Tryte_t) * ternary_to_decimal(*Stack.sp));
-	*(Stack.data + ternary_to_decimal(*Stack.sp) - 1) = value;
+	Stack.data = (Tryte_t *)realloc(Stack.data, sizeof(Tryte_t) * ternaryToDecimal(*Stack.sp));
+	*(Stack.data + ternaryToDecimal(*Stack.sp) - 1) = value;
 }
 
 Tryte_t pop(void) {
 	Tryte_t temp;
 	assert(equal(SP, MIN) == 0);
 	*Stack.sp = sub(*Stack.sp, ONE);
-	temp = *(Stack.data + ternary_to_decimal(*Stack.sp));
-	Stack.data = (Tryte_t *)realloc(Stack.data, sizeof(Tryte_t) * ternary_to_decimal(*Stack.sp));
+	temp = *(Stack.data + ternaryToDecimal(*Stack.sp));
+	Stack.data = (Tryte_t *)realloc(Stack.data, sizeof(Tryte_t) * ternaryToDecimal(*Stack.sp));
 	return temp;
 }
 
 void initStack(void) {
 	Stack.data = malloc(0); //смело присваиваем адресу реальное значение, а не NULL, потому, что
 	Stack.sp = &SP;
-	*Stack.sp = decimal_to_ternary(0); //при top == 0 невозможжно получить данные по этому адресу с помощью функции pull
+	*Stack.sp = decimalToTernary(0); //при top == 0 невозможжно получить данные по этому адресу с помощью функции pull
 	Stack.bp = &BP;
-	*Stack.bp = decimal_to_ternary(0);
+	*Stack.bp = decimalToTernary(0);
 }
