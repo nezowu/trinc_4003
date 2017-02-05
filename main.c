@@ -348,6 +348,27 @@ Tryte_t newT(T ou, T one, T two, T three) { //функция для переоп
 	return tmp; 
 }
 
+char asciiToOscii(char ch) {
+	ch = toupper(ch);
+	if(ch > 31 && ch < 97) 
+		ch -= 31; //1-65
+	else if(122 < ch && ch < 128)
+		ch -= 57; //66-70
+	else
+		ch = 1; //неизвестные символы делаем пробельными
+	return ch;
+}
+
+char osciiToAscii(char ch) {
+	if(ch < 66 && ch > 0)  
+		ch += 31; 
+	else if(ch > 65 && ch < 71) 
+		ch += 57; 
+	else
+		ch = 63; //неизвестным символам присвоим знак вопроса
+	return tolower(ch);
+}
+
 Tryte_t scanStr(void) {
 	Tryte_t asciiNext = {0, 0, 0, 0}; 
 	char buff[N];
@@ -355,19 +376,14 @@ Tryte_t scanStr(void) {
 	size_t count = strlen(buff);
 	asciiNext = writeBus(Data, asciiNext, decimalToTernary(count));
 	for(T i = 0; i < count; i++) {
-		buff[i] = toupper(buff[i]);
-		if(buff[i] > 31 && buff[i] < 97) 
-			buff[i] -= 31; //1-65
-		else if(122 < buff[i] && buff[i] < 128)
-			buff[i] -= 57; //66-70
-		else
-			buff[i] = 1; //неизвестные символы делаем пробельными
+		buff[i] = asciiToOscii(buff[i]);
 		printf("%d\n", buff[i]);
 		asciiNext = writeBus(Data, asciiNext, decimalToTernary(buff[i])); 
 	}
 	return asciiNext; //следующая свободная ячейка
 }
-
+//Tryte_t getChar(void)
+//int putChar(Tryte_t add)
 int printStr(Tryte_t addr) {
 	char ch;
 	T size = ternaryToDecimal(readBus(Data, addr));
@@ -375,13 +391,8 @@ int printStr(Tryte_t addr) {
 	for(T i = 1; i <= size; i++) {
 		ch = ternaryToDecimal(readBus(Data, addr));
 		addr = summ(addr, ONE);
-		if(ch < 66 && ch > 0) 
-			ch += 31; 
-		else if(ch > 65 && ch < 71)
-			ch += 57; 
-		else
-			ch = 63;
-		printf("%c", tolower(ch));
+		ch = osciiToAscii(ch);
+		printf("%c", ch);
 	}
 	puts("");
 	return size;
