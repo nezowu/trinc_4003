@@ -1,6 +1,4 @@
 #include "tryte.h"
-#include <stdio.h>
-#include <ctype.h>
 
 int main(void) {
 	Tryte_t d = {0, 0, 0, 0};
