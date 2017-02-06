@@ -49,8 +49,11 @@ Tryte_t writeBus(Tryte_t *, Tryte_t, Tryte_t); //return nextaddr, bus, addr, dat
 Tryte_t readBus(Tryte_t *, Tryte_t); //return data, bus, addr
 Tryte_t scanStr(void);
 int printStr(Tryte_t); //addr
+char asciiToOscii(char);
+char osciiToAscii(char);
 
-int main(void) {
+int main(int argc, char *argv[]) {
+//	assert(argc == 2); //раскоментировать при запуске с программой мини-ос
 	Tryte_t temp;
 	FILE *file;
 	Text = (Tryte_t *)malloc(N);
